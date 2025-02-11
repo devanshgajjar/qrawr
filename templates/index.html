@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <style>
+        :root {
+            --primary-color: #7209b7;
+            --secondary-color: #3f37c9;
+            --success-color: #4CAF50;
+            --error-color: #ef233c;
+            --background-color: #f8f9fa;
+            --surface-color: #ffffff;
+            --text-primary: #2b2d42;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --spacing-unit: 8px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: calc(var(--spacing-unit) * 4);
+        }
+
+        .container {
+            background-color: var(--surface-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            padding: calc(var(--spacing-unit) * 5);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: calc(var(--spacing-unit) * 5);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .logo .highlight {
+            color: var(--primary-color);
+            font-weight: 900;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: calc(var(--spacing-unit) * 8);
+        }
+
+        .options-panel {
+            display: flex;
+            flex-direction: column;
+            gap: calc(var(--spacing-unit) * 4);
+        }
+
+        .color-section-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: calc(var(--spacing-unit) * 2);
+        }
+
+        .style-section-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: calc(var(--spacing-unit) * 2);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: calc(var(--spacing-unit) * 1.5);
+            font-size: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .option-section {
+            background-color: var(--background-color);
+            padding: calc(var(--spacing-unit) * 2.5);
+            border-radius: var(--radius-sm);
+        }
+
+        .option-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: calc(var(--spacing-unit) * 1.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .color-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .color-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .color-btn.active {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .color-btn.transparent {
+            background-image: 
+                linear-gradient(45deg, #ccc 25%, transparent 25%),
+                linear-gradient(-45deg, #ccc 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #ccc 75%),
+                linear-gradient(-45deg, transparent 75%, #ccc 75%);
+            background-size: 8px 8px;
+            background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+            background-color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .color-btn.transparent::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, #ff000000 0%, #ff000000 100%);
+            border-radius: 4px;
+        }
+
+        .style-btn {
+            width: 48px;
+            height: 48px;
+            padding: calc(var(--spacing-unit) * 1.5);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--surface-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .style-btn:hover {
+            background-color: var(--background-color);
+            border-color: var(--primary-color);
+        }
+
+        .style-btn.active {
+            border-color: var(--primary-color);
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+
+        .generate-btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: calc(var(--spacing-unit) * 2);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .generate-btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+
+        .output-panel {
+            position: sticky;
+            top: calc(var(--spacing-unit) * 4);
+            background: var(--surface-color);
+            border-radius: var(--radius-md);
+            padding: calc(var(--spacing-unit) * 3);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .qr-container {
+            background-color: var(--background-color);
+            border-radius: var(--radius-sm);
+            padding: calc(var(--spacing-unit) * 3);
+            margin-bottom: calc(var(--spacing-unit) * 3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .qr-container svg {
+            max-width: 300px;
+            width: 100%;
+            height: auto;
+        }
+
+        .download-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: calc(var(--spacing-unit) * 2);
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .download-btn {
+            padding: calc(var(--spacing-unit) * 1.5);
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .download-btn:first-child {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        .download-btn:last-child {
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .error {
+            color: var(--error-color);
+            background-color: rgba(239, 35, 60, 0.1);
+            padding: calc(var(--spacing-unit) * 2);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                padding: calc(var(--spacing-unit) * 2);
+            }
+
+            .container {
+                padding: calc(var(--spacing-unit) * 3);
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: calc(var(--spacing-unit) * 4);
+            }
+
+            .output-panel {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <a href="/" class="logo">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 3h7v7H3V3z" fill="currentColor"/>
+                        <path d="M14 3h7v7h-7V3z" fill="currentColor"/>
+                        <path d="M3 14h7v7H3v-7z" fill="currentColor"/>
+                        <path d="M14 14h7v2h-2v3h-3v2h-2v-7z" fill="currentColor"/>
+                        <path d="M19 19v2h2v-2h-2z" fill="currentColor"/>
+                        <path d="M5 5v3h3V5H5z" fill="white"/>
+                        <path d="M16 5v3h3V5h-3z" fill="white"/>
+                        <path d="M5 16v3h3v-3H5z" fill="white"/>
+                    </svg>
+                    <span>q<span class="highlight">RAWR</span></span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="options-panel">
+                <div class="input-group">
+                    <input type="text" id="linkInput" placeholder="Enter your link here" />
+                </div>
+                
+                <div class="color-section-group">
+                    <div class="option-section">
+                        <span class="option-title">QR Code Color</span>
+                        <div class="color-options">
+                            <button class="color-btn active" data-color="#000000" style="background-color: #000000;"></button>
+                            <button class="color-btn" data-color="#FF1493" style="background-color: #FF1493;"></button>
+                            <button class="color-btn" data-color="#4CAF50" style="background-color: #4CAF50;"></button>
+                            <button class="color-btn" data-color="#2196F3" style="background-color: #2196F3;"></button>
+                            <button class="color-btn" data-color="#FFA500" style="background-color: #FFA500;"></button>
+                            <button class="color-btn" data-color="#9C27B0" style="background-color: #9C27B0;"></button>
+                        </div>
+                    </div>
+                    
+                    <div class="option-section">
+                        <span class="option-title">Background Color</span>
+                        <div class="color-options">
+                            <button class="color-btn bg-color transparent" data-color="transparent" title="Transparent"></button>
+                            <button class="color-btn bg-color active" data-color="#FFFFFF" style="background-color: #FFFFFF;"></button>
+                            <button class="color-btn bg-color" data-color="#F0F0F0" style="background-color: #F0F0F0;"></button>
+                            <button class="color-btn bg-color" data-color="#FFEBF3" style="background-color: #FFEBF3;"></button>
+                            <button class="color-btn bg-color" data-color="#E8F5E9" style="background-color: #E8F5E9;"></button>
+                            <button class="color-btn bg-color" data-color="#E3F2FD" style="background-color: #E3F2FD;"></button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="style-section-group">
+                    <div class="option-section">
+                        <span class="option-title">Dots</span>
+                        <div class="style-options">
+                            <button class="style-btn active" data-style="square" data-type="dot">
+                                <svg viewBox="0 0 24 24"><rect width="16" height="16" x="4" y="4"/></svg>
+                            </button>
+                            <button class="style-btn" data-style="rounded" data-type="dot">
+                                <svg viewBox="0 0 24 24"><rect width="16" height="16" x="4" y="4" rx="4"/></svg>
+                            </button>
+                            <button class="style-btn" data-style="circle" data-type="dot">
+                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="option-section">
+                        <span class="option-title">Marker border</span>
+                        <div class="style-options">
+                            <button class="style-btn active" data-style="square" data-type="marker">
+                                <svg viewBox="0 0 24 24"><rect width="16" height="16" x="4" y="4"/></svg>
+                            </button>
+                            <button class="style-btn" data-style="rounded" data-type="marker">
+                                <svg viewBox="0 0 24 24"><rect width="16" height="16" x="4" y="4" rx="4"/></svg>
+                            </button>
+                            <button class="style-btn" data-style="circle" data-type="marker">
+                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="option-section">
+                        <span class="option-title">Marker center</span>
+                        <div class="style-options">
+                            <button class="style-btn active" data-style="square" data-type="center">
+                                <svg viewBox="0 0 24 24"><rect width="8" height="8" x="8" y="8"/></svg>
+                            </button>
+                            <button class="style-btn" data-style="dot" data-type="center">
+                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="generate-btn" onclick="generateQR()">Generate QR Code</button>
+            </div>
+            
+            <div class="output-panel">
+                <div id="qrOutput"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const qrOutput = document.getElementById('qrOutput');
+        let currentStyles = {
+            dot: 'square',
+            marker: 'square',
+            center: 'square'
+        };
+
+        let currentColors = {
+            fg: '#000000',
+            bg: '#FFFFFF'
+        };
+
+        // Style button click handlers
+        document.querySelectorAll('.style-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const type = this.dataset.type;
+                const style = this.dataset.style;
+                
+                // Update active state
+                document.querySelectorAll(`.style-btn[data-type="${type}"]`)
+                    .forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update current style
+                currentStyles[type] = style;
+                
+                // Generate QR code with new style
+                generateQR();
+            });
+        });
+
+        // Color button click handlers
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const color = this.dataset.color;
+                const isBgColor = this.classList.contains('bg-color');
+                
+                // Update active state
+                const selector = isBgColor ? '.color-btn.bg-color' : '.color-btn:not(.bg-color)';
+                document.querySelectorAll(selector).forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update current color
+                if (isBgColor) {
+                    currentColors.bg = color;
+                } else {
+                    currentColors.fg = color;
+                }
+                
+                // Generate QR code with new colors
+                generateQR();
+            });
+        });
+
+        async function generateQR() {
+            const link = document.getElementById('linkInput').value;
+            if (!link) {
+                qrOutput.innerHTML = '<p class="error">Please enter a link</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        link,
+                        fgColor: currentColors.fg,
+                        bgColor: currentColors.bg,
+                        dotStyle: currentStyles.dot,
+                        markerStyle: currentStyles.marker,
+                        markerCenter: currentStyles.center
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    const filename = link.replace(/^https?:\/\//, '').split('/')[0];
+                    
+                    qrOutput.innerHTML = `
+                        <div class="qr-container">
+                            ${data.svg}
+                        </div>
+                        <div class="download-options">
+                            <button onclick="downloadPNG('${link}')" class="download-btn">
+                                Download PNG
+                            </button>
+                            <button onclick="downloadSVG('${link}')" class="download-btn">
+                                Download SVG
+                            </button>
+                        </div>
+                    `;
+
+                    // Style the SVG
+                    const svg = qrOutput.querySelector('svg');
+                    if (svg) {
+                        svg.style.width = '300px';
+                        svg.style.height = '300px';
+                        svg.style.maxWidth = '100%';
+                    }
+                } else {
+                    qrOutput.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                qrOutput.innerHTML = '<p class="error">Error generating QR code</p>';
+            }
+        }
+
+        async function downloadSVG(link) {
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        link,
+                        fgColor: currentColors.fg,
+                        bgColor: currentColors.bg,
+                        dotStyle: currentStyles.dot,
+                        markerStyle: currentStyles.marker,
+                        markerCenter: currentStyles.center
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    const filename = link.replace(/^https?:\/\//, '').split('/')[0];
+                    
+                    // Create blob from SVG content
+                    const blob = new Blob([data.svg], { 
+                        type: 'image/svg+xml;charset=utf-8'
+                    });
+                    
+                    // Create download link
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `qr_${filename}.svg`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } else {
+                    throw new Error(data.error || 'Failed to generate SVG');
+                }
+            } catch (error) {
+                console.error('Error downloading SVG:', error);
+                qrOutput.innerHTML += `<p class="error">Error downloading SVG: ${error.message}</p>`;
+            }
+        }
+
+        async function downloadPNG(link) {
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        link,
+                        fgColor: currentColors.fg,
+                        bgColor: currentColors.bg,
+                        dotStyle: currentStyles.dot,
+                        markerStyle: currentStyles.marker,
+                        markerCenter: currentStyles.center,
+                        format: 'png'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    const filename = link.replace(/^https?:\/\//, '').split('/')[0];
+                    
+                    // Create download link
+                    const a = document.createElement('a');
+                    a.href = data.image;
+                    a.download = `qr_${filename}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                } else {
+                    throw new Error(data.error || 'Failed to generate PNG');
+                }
+            } catch (error) {
+                console.error('Error downloading PNG:', error);
+                qrOutput.innerHTML += `<p class="error">Error downloading PNG: ${error.message}</p>`;
+            }
+        }
+
+        // Generate QR code when Enter is pressed in the input field
+        document.getElementById('linkInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateQR();
+            }
+        });
+    </script>
+</body>
+</html> 
